@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CarPrice AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <section class="hero">
+        <div class="bg-overlay"></div>
+
+        <!-- Headlights glow -->
+        <div class="headlight left-light"></div>
+        <div class="headlight right-light"></div>
+
+        <!-- Top branding -->
+        <div class="top-brand">
+            <div class="brand-text">
+                <h1>CarPrice <span>AI</span></h1>
+                <p>Predict the price of any used car with AI</p>
+            </div>
+        </div>
+
+        <!-- Glass card -->
+        <div class="glass-card">
+            <div class="card-title">
+                <span class="tag-icon">🏷</span>
+                <h2>Predict Car Price</h2>
+            </div>
+            <div class="title-line"></div>
+
+            <form method="POST" class="car-form">
+                <!-- Brand -->
+                <div class="form-group">
+                    <label for="brand">Brand</label>
+                    <div class="input-with-icon">
+                        <img id="brandLogo" class="brand-logo" src="{{ url_for('static', filename='logos/default.png') }}" alt="brand logo">
+                        <select name="brand" id="brand" required>
+                            <option value="" disabled selected>Select brand</option>
+                            {% for brand in car_data.keys() %}
+                                <option value="{{ brand }}">{{ brand }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Model -->
+                <div class="form-group">
+                    <label for="model">Model</label>
+                    <div class="input-with-icon">
+                        <img id="modelLogo" class="brand-logo" src="{{ url_for('static', filename='logos/default.png') }}" alt="brand logo">
+                        <select name="model" id="model" required>
+                            <option value="" disabled selected>Select model</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Year -->
+                <div class="form-group">
+                    <label for="year">Year</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">📅</span>
+                        <input type="number" name="year" id="year" placeholder="e.g. 2020" required>
+                    </div>
+                </div>
+
+                <!-- KM -->
+                <div class="form-group">
+                    <label for="km_driven">KM Driven</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">🏁</span>
+                        <input type="number" name="km_driven" id="km_driven" placeholder="e.g. 85000" required>
+                        <span class="km-text">km</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="predict-btn">
+                    <span>🚀</span>
+                    Predict Price
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Alert Box -->
+    {% if prediction %}
+    <div class="alert-overlay" id="alertOverlay">
+        <div class="alert-box">
+            <h2>Estimated Car Price</h2>
+            <p>{{ prediction }}</p>
+            <button onclick="closeAlert()">Close</button>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        const carData = {{ car_data|tojson }};
+
+        const brandSelect = document.getElementById("brand");
+        const modelSelect = document.getElementById("model");
+        const brandLogo = document.getElementById("brandLogo");
+        const modelLogo = document.getElementById("modelLogo");
+
+        const defaultLogo = "{{ url_for('static', filename='logos/default.png') }}";
+
+        const logoMap = {
+            "Toyota": "{{ url_for('static', filename='logos/toyota.png') }}",
+            "Hyundai": "{{ url_for('static', filename='logos/hyundai.png') }}",
+            "Kia": "{{ url_for('static', filename='logos/kia.png') }}",
+            "Nissan": "{{ url_for('static', filename='logos/nissan.png') }}",
+            "BMW": "{{ url_for('static', filename='logos/bmw.png') }}",
+            "Mercedes": "{{ url_for('static', filename='logos/mercedes.png') }}",
+            "Chevrolet": "{{ url_for('static', filename='logos/chevrolet.png') }}",
+            "Honda": "{{ url_for('static', filename='logos/honda.png') }}"
+        };
+
+        function setBrandLogo(brand) {
+            const logo = logoMap[brand] || defaultLogo;
+            brandLogo.src = logo;
+            modelLogo.src = logo;
+        }
+
+        brandSelect.addEventListener("change", function () {
+            const selectedBrand = this.value;
+            const models = carData[selectedBrand] || [];
+
+            modelSelect.innerHTML = '<option value="" disabled selected>Select model</option>';
+
+            models.forEach(model => {
+                const option = document.createElement("option");
+                option.value = model;
+                option.textContent = model;
+                modelSelect.appendChild(option);
+            });
+
+            setBrandLogo(selectedBrand);
+        });
+
+        function closeAlert() {
+            const alert = document.getElementById("alertOverlay");
+            if (alert) {
+                alert.style.display = "none";
+            }
+        }
+    </script>
+
+</body>
+</html>
